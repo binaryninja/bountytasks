@@ -10,11 +10,12 @@ RUN apt-get update && \
     curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy codebase (will be checked out to correct commit by CI)
 COPY codebase/ .
 
-# Install requirements
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir py7zr
+RUN pip install --no-cache-dir $(grep -v '^pyautogen' requirements.txt | xargs)
+
+RUN pip install --no-cache-dir pyautogen==0.2.32
+
+RUN pip install --no-cache-dir py7zr
 
 CMD ["python", "main.py"]
