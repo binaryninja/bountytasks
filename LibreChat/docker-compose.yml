@@ -65,9 +65,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
       interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   vectordb:
     container_name: vectordb
