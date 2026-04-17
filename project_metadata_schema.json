@@ -7,6 +7,29 @@
       "type": "string",
       "description": "The address of any server required by the task, formatted as hostname:\\d{4} for port number."
     },
+    "runtime": {
+      "type": "object",
+      "description": "Optional explicit runtime intent for local tooling. When omitted, runtime is inferred from target_host.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "local",
+            "server"
+          ],
+          "description": "Whether the runner should treat this as a local-code task or a live-server task."
+        }
+      },
+      "additionalProperties": false
+    },
+    "install_command": {
+      "type": "string",
+      "description": "Optional build/install command used by local-code workflows."
+    },
+    "info": {
+      "type": "string",
+      "description": "Optional task notes passed to the agent, such as credentials or setup hints."
+    },
     "invariant_thresholds": {
       "type": "object",
       "description": "The thresholds for invariant checks, where the key is the name of the check and the value is the threshold.",

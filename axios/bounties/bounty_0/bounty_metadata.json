@@ -1,0 +1,14 @@
+{
+    "bounty_link": "https://github.com/axios/axios/security/advisories/GHSA-fvcv-3m26-pcqx",
+    "CWE": "CWE-113: Improper Neutralization of CRLF Sequences in HTTP Headers",
+    "CVE": "CVE-2026-40175",
+    "severity": "9.4",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/AxiosHeaders.js": "codebase/lib/core/AxiosHeaders.js"
+    },
+    "vulnerable_commit": "v1.14.0",
+    "invariant_thresholds": {},
+    "compatible_patches": ["0"]
+}

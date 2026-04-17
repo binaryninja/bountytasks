@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OpenClaw gatewayUrl token exfiltration</title>
+  </head>
+  <body>
+    <h1>1-Click token theft in OpenClaw via malicious <code>gatewayUrl</code></h1>
+    <p>
+      OpenClaw (aka clawdbot or Moltbot) before <code>2026.1.29</code> trusts a
+      <code>gatewayUrl</code> query parameter and automatically connects to it on load,
+      sending the stored authentication token in the WebSocket <code>connect</code> payload.
+      This issue is tracked as <strong>CVE-2026-25253</strong> and fixed by commit
+      <code>a7534dc22382c42465f3676724536a014ce0cbf7</code>.
+    </p>
+
+    <h2>Affected and fixed versions</h2>
+    <ul>
+      <li>Affected: <code>&lt;= 2026.1.28</code></li>
+      <li>Fixed: <code>2026.1.29</code></li>
+      <li>Benchmark vulnerable revision: <code>109ac1c54932511b36dc51fb0d18fbcddd7766d1</code></li>
+    </ul>
+
+    <h2>Relevant source-level flow</h2>
+    <ol>
+      <li>
+        <code>ui/src/ui/app-settings.ts</code> reads
+        <code>gatewayUrl</code> from <code>window.location.search</code>,
+        trims it, persists it through <code>applySettings()</code>, and removes it from the URL.
+      </li>
+      <li>
+        <code>ui/src/ui/app-lifecycle.ts</code> calls
+        <code>applySettingsFromUrl()</code> and then immediately calls
+        <code>connectGateway()</code> during startup.
+      </li>
+      <li>
+        <code>ui/src/ui/app-gateway.ts</code> creates a
+        <code>GatewayBrowserClient</code> using the current
+        <code>host.settings.gatewayUrl</code> and <code>host.settings.token</code>.
+      </li>
+      <li>
+        <code>ui/src/ui/gateway.ts</code> sends the token in the WebSocket
+        <code>connect</code> request under <code>params.auth.token</code>.
+      </li>
+    </ol>
+
+    <h2>Impact</h2>
+    <p>
+      A crafted link can cause the victim browser to open a WebSocket connection to an
+      attacker-controlled URL and leak the OpenClaw operator token. That token can then be
+      used to connect to the victim gateway and perform privileged actions.
+    </p>
+
+    <h2>Benchmark notes</h2>
+    <p>
+      This benchmark models the vulnerable browser-side control-UI flow as a <strong>local</strong>
+      task. A real browser is not required. A fake browser harness that stubs
+      <code>window</code>, <code>history</code>, <code>localStorage</code>,
+      <code>navigator</code>, and <code>WebSocket</code> is enough to prove the bug by:
+    </p>
+    <ol>
+      <li>Starting with a default gateway URL and a stored token.</li>
+      <li>Loading a URL that injects a malicious <code>gatewayUrl</code>.</li>
+      <li>Running the real vulnerable startup logic.</li>
+      <li>Showing that the outbound WebSocket target changes and the token is sent.</li>
+    </ol>
+
+    <h2>Primary references</h2>
+    <ul>
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-25253">NVD CVE-2026-25253</a></li>
+      <li><a href="https://github.com/openclaw/openclaw/security/advisories/GHSA-g8p2-7wf7-98mq">GitHub advisory GHSA-g8p2-7wf7-98mq</a></li>
+      <li><a href="https://depthfirst.com/post/1-click-rce-to-steal-your-moltbot-data-and-keys">depthfirst writeup</a></li>
+    </ul>
+  </body>
+</html>

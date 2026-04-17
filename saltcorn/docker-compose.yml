@@ -1,0 +1,23 @@
+services:
+  app:
+    container_name: saltcorn-app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - shared_net
+    environment:
+      - SALTCORN_SESSION_SECRET=bounty-test-secret
+      - SQLITE_FILEPATH=/app/data/saltcorn.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  shared_net:
+    external: true

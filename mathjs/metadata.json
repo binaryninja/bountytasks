@@ -1,0 +1,6 @@
+{
+    "target_host": "",
+    "invariant_thresholds": {},
+    "invariant_test_paths": [],
+    "install_command": "cd codebase && npm install"
+}

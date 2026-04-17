@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHSA-jcxm-m3jx-f287: Command Execution via Option-Parsing Bypass in simple-git</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
+        h2 { border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
+        .severity { display: inline-block; padding: 2px 8px; border-radius: 4px; color: #fff; font-weight: bold; }
+        .severity-high { background-color: #db6d28; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+        th, td { border: 1px solid #d0d7de; padding: 8px 12px; text-align: left; }
+        th { background-color: #f6f8fa; }
+        code { background-color: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+        pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+    </style>
+</head>
+<body>
+    <h1>GHSA-jcxm-m3jx-f287: Command Execution via Option-Parsing Bypass in simple-git</h1>
+
+    <p><span class="severity severity-high">High Severity (CVSS 8.1)</span></p>
+
+    <h2>Overview</h2>
+    <table>
+        <tr><th>CVE ID</th><td>CVE-2026-28291</td></tr>
+        <tr><th>CWE</th><td>CWE-78: OS Command Injection</td></tr>
+        <tr><th>Package</th><td>simple-git (npm)</td></tr>
+        <tr><th>Affected Versions</th><td>&lt; 3.32.0</td></tr>
+        <tr><th>Patched Version</th><td>3.32.0</td></tr>
+        <tr><th>Advisory</th><td><a href="https://github.com/steveukx/git-js/security/advisories/GHSA-jcxm-m3jx-f287">GHSA-jcxm-m3jx-f287</a></td></tr>
+    </table>
+
+    <h2>Description</h2>
+    <p>
+        The simple-git library includes a security mechanism (<code>blockUnsafeOperationsPlugin</code>) that
+        attempts to block dangerous Git options like <code>-u</code> and <code>--upload-pack</code> to prevent
+        arbitrary command execution. This was originally introduced to address CVE-2022-25860.
+    </p>
+    <p>
+        However, the implementation fails to account for Git's flexible option-parsing behavior. Git allows
+        combining single-character flags into a single argument (e.g., <code>-vu</code> is equivalent to
+        <code>-v -u</code>). The safety check only matches arguments that start exactly with <code>-u</code>
+        or <code>--upload-pack</code>, missing combined flags such as:
+    </p>
+    <ul>
+        <li><code>-vu</code> (verbose + upload-pack)</li>
+        <li><code>-4u</code> (IPv4 + upload-pack)</li>
+        <li><code>-6u</code> (IPv6 + upload-pack)</li>
+        <li><code>-lu</code> (local + upload-pack)</li>
+        <li><code>-nu</code> (no-checkout + upload-pack)</li>
+        <li><code>-qu</code> (quiet + upload-pack)</li>
+        <li><code>-su</code> (shallow-submodules + upload-pack)</li>
+        <li><code>--u</code> (long-form prefix match for upload-pack)</li>
+    </ul>
+
+    <h2>Impact</h2>
+    <p>
+        An attacker who can control arguments passed to <code>git.clone()</code>, <code>git.fetch()</code>,
+        <code>git.pull()</code>, or <code>git.push()</code> can achieve arbitrary command execution on the
+        host system, even when <code>allowUnsafePack</code> is set to <code>false</code> (the default).
+    </p>
+
+    <h2>CVSS Vector</h2>
+    <p><code>CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H</code></p>
+
+    <h2>Attack Vector</h2>
+    <table>
+        <tr><th>Attack Vector</th><td>Network</td></tr>
+        <tr><th>Attack Complexity</th><td>High</td></tr>
+        <tr><th>Privileges Required</th><td>None</td></tr>
+        <tr><th>User Interaction</th><td>None</td></tr>
+    </table>
+
+    <h2>Fix</h2>
+    <p>
+        The fix (released in simple-git 3.32.0) replaces the simple string-matching approach with a proper
+        argument parser (<code>@simple-git/argv-parser</code>) that correctly identifies unsafe options
+        regardless of how they are combined or formatted in the command line arguments.
+    </p>
+
+    <h2>Credits</h2>
+    <p>Reported by <strong>JuHwiSang</strong>.</p>
+</body>
+</html>

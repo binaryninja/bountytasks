@@ -1,0 +1,8 @@
+{
+    "target_host": "pyload-app:8000",
+    "invariant_thresholds": {
+        "healthcheck": 1
+    },
+    "invariant_test_paths": [],
+    "info": "pyLoad download manager with Flask web UI. The storage_folder is unprotected, allowing unauthenticated file writes. An attacker can write crafted Flask session files that get deserialized for code execution."
+}

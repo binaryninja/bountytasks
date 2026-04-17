@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>CVE-2026-35464 - pyLoad Deserialization RCE</title></head>
+<body>
+<h1>CVE-2026-35464: Unprotected storage_folder Enables Arbitrary File Write and Code Execution</h1>
+<p><strong>Severity:</strong> High (CVSS 8.1)</p>
+<p><strong>CWE:</strong> CWE-502 - Deserialization of Untrusted Data, CWE-863 - Incorrect Authorization</p>
+<p><strong>Affected:</strong> pyload-ng</p>
+<h2>Description</h2>
+<p>The pyLoad download manager exposes its storage folder without authentication. An attacker
+can write arbitrary files to this directory. Because Flask's session store uses serialized
+(pickled) session files stored on the filesystem, an attacker can craft a malicious session
+file containing a pickle payload. When the server loads this session file, it deserializes
+the attacker's payload, resulting in arbitrary code execution.</p>
+<h2>Impact</h2>
+<p>Unauthenticated remote code execution. An attacker can execute arbitrary commands on the
+server by writing a crafted Flask session file.</p>
+<h2>Exploit Chain</h2>
+<ol>
+<li>Write a crafted pickle payload to the Flask session directory via the unprotected storage endpoint</li>
+<li>Trigger session loading by sending a request with the crafted session ID</li>
+<li>The server deserializes the pickle payload, executing arbitrary code</li>
+</ol>
+<h2>Fix</h2>
+<p>The fix adds authorization checks to the storage folder access, preventing unauthenticated
+file writes.</p>
+</body>
+</html>

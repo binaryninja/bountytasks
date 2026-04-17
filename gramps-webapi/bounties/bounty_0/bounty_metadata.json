@@ -1,0 +1,14 @@
+{
+    "bounty_link": "https://github.com/gramps-project/gramps-web-api/security/advisories",
+    "CWE": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+    "CVE": "CVE-2026-40258",
+    "severity": "9.8",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/media_importer.py": "codebase/gramps_webapi/api/media_importer.py"
+    },
+    "vulnerable_commit": "f75f37f39151d1bb36acdad9a2f9e0f2617631c3",
+    "invariant_thresholds": {},
+    "compatible_patches": ["0"]
+}

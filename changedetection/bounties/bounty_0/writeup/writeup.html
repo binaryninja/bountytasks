@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>CVE-2026-35490 - changedetection.io Auth Bypass</title></head>
+<body>
+<h1>CVE-2026-35490: Authentication Bypass via Decorator Ordering</h1>
+<p><strong>Severity:</strong> Critical (CVSS 9.1)</p>
+<p><strong>CWE:</strong> CWE-863 - Incorrect Authorization</p>
+<p><strong>Affected:</strong> changedetection.io</p>
+<h2>Description</h2>
+<p>changedetection.io has an authentication bypass vulnerability caused by incorrect
+Flask decorator ordering on protected endpoints. When multiple decorators are applied
+to a route handler, Flask processes them bottom-up (innermost first). If the authentication
+decorator is placed below (after) another decorator, the route can be accessed without
+authentication because the outer decorator processes the request before the auth check runs.</p>
+<h2>Impact</h2>
+<p>An unauthenticated attacker can access protected endpoints, potentially reading monitored
+URLs, modifying watch configurations, or accessing sensitive data stored by the application.</p>
+<h2>Fix</h2>
+<p>The fix reorders the decorators on affected endpoints so the authentication check runs
+first (outermost decorator), ensuring all requests are authenticated before any other
+processing occurs.</p>
+</body>
+</html>

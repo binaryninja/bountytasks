@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.10
 
 COPY ./codebase /codebase
 
@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g pnpm@9.1.0
 RUN pip install -e /codebase
 RUN pip install -e /codebase/client/python
+RUN pip install requests
+RUN pip install 'huggingface_hub<0.26'
 RUN python /codebase/scripts/generate_theme.py
 
 RUN NODE_OPTIONS=--max_old_space_size=4096 pnpm --prefix /codebase i --frozen-lockfile --ignore-scripts

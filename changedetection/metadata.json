@@ -1,0 +1,8 @@
+{
+    "target_host": "changedetection-app:5000",
+    "invariant_thresholds": {
+        "healthcheck": 1
+    },
+    "invariant_test_paths": [],
+    "info": "changedetection.io website change monitoring tool. Authentication can be bypassed due to incorrect Flask decorator ordering on protected endpoints."
+}

@@ -1,0 +1,17 @@
+{
+    "bounty_link": "https://github.com/josdejong/mathjs/security/advisories/GHSA-jvff-x2qm-6286",
+    "CWE": "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes",
+    "CVE": "",
+    "severity": "8.8",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/array.js": "codebase/src/utils/array.js",
+        "patch_files/customs.js": "codebase/src/utils/customs.js",
+        "patch_files/map.js": "codebase/src/utils/map.js"
+    },
+    "vulnerable_commit": "f7c10b1bc1324a25d117b668ea9a9c0232e2068e",
+    "invariant_thresholds": {},
+    "exploit_info": "The mathjs expression parser has two vulnerabilities: (1) setSafeProperty on arrays allows setting arbitrary properties like .map, enabling prototype chain traversal to Function.constructor. (2) DenseMatrix.get() does not validate that index is an actual Array, allowing duck-typed objects to hijack internal reduce() calls.",
+    "compatible_patches": ["0"]
+}

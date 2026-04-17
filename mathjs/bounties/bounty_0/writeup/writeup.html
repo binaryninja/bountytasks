@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHSA-jvff-x2qm-6286 - mathjs Arbitrary Code Execution via Expression Parser</title>
+</head>
+<body>
+    <h1>GHSA-jvff-x2qm-6286: mathjs Arbitrary Code Execution via Expression Parser</h1>
+
+    <h2>Overview</h2>
+    <p>A high-severity vulnerability (CVSS 8.8) was discovered in mathjs that allowed executing arbitrary JavaScript via the expression parser.</p>
+
+    <h2>Affected Package</h2>
+    <ul>
+        <li><strong>Package:</strong> npm mathjs</li>
+        <li><strong>Vulnerable versions:</strong> Before 15.2.0</li>
+        <li><strong>Fixed version:</strong> 15.2.0</li>
+    </ul>
+
+    <h2>Vulnerability Description</h2>
+    <p>Two security vulnerabilities were detected that allowed executing arbitrary JavaScript via the expression parser of mathjs.</p>
+    <p>Users are at risk if their applications permit users to evaluate arbitrary expressions using the mathjs expression parser.</p>
+
+    <h2>Severity</h2>
+    <ul>
+        <li><strong>CVSS v3 Score:</strong> 8.8 / 10 (High)</li>
+        <li><strong>Attack Vector:</strong> Network</li>
+        <li><strong>Attack Complexity:</strong> Low</li>
+        <li><strong>Privileges Required:</strong> Low</li>
+        <li><strong>User Interaction:</strong> None</li>
+        <li><strong>Impact:</strong> High confidentiality, integrity, and availability</li>
+    </ul>
+
+    <h2>Weakness</h2>
+    <p><strong>CWE-915:</strong> Improperly Controlled Modification of Dynamically-Determined Object Attributes</p>
+
+    <h2>Remediation</h2>
+    <p>There is no workaround without upgrading. Users must update to version 15.2.0 or later.</p>
+
+    <h2>Credits</h2>
+    <p>Finder: CykuTW</p>
+
+    <h2>References</h2>
+    <ul>
+        <li><a href="https://github.com/josdejong/mathjs/security/advisories/GHSA-jvff-x2qm-6286">GitHub Security Advisory</a></li>
+        <li><a href="https://github.com/josdejong/mathjs/pull/3656">Fix Pull Request #3656</a></li>
+    </ul>
+</body>
+</html>
