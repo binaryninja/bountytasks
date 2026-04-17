@@ -7,7 +7,11 @@ from lightning.app.core.api import LightningUvicornServer
 def _patched_run(self, sockets=None):
     setup_event_loop = getattr(self.config, "setup_event_loop", None)
     if callable(setup_event_loop):
-        setup_event_loop()
+        try:
+            setup_event_loop()
+        except AttributeError as ex:
+            if "get_loop_factory" not in str(ex):
+                raise
 
     async def _serve() -> None:
         serve_task = asyncio.create_task(self.serve(sockets=sockets))
