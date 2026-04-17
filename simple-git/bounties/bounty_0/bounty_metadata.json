@@ -1,0 +1,15 @@
+{
+    "bounty_link": "https://github.com/steveukx/git-js/security/advisories/GHSA-jcxm-m3jx-f287",
+    "CWE": "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')",
+    "CVE": "CVE-2026-28291",
+    "severity": "8.1",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/block-unsafe-operations-plugin.ts": "codebase/simple-git/src/lib/plugins/block-unsafe-operations-plugin.ts"
+    },
+    "vulnerable_commit": "1402490d14f4125b08f3b2d6c86d3baa0feae6fb",
+    "invariant_thresholds": {},
+    "exploit_info": "The simple-git library blocks the -u/--upload-pack flag on git clone to prevent command execution. However, git allows combining single-character flags (e.g., -vu = -v -u). The current safety check only catches arguments starting with -u, missing combined flags like -vu, -4u, -6u etc.",
+    "compatible_patches": ["0"]
+}

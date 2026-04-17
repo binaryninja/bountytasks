@@ -1,0 +1,14 @@
+{
+    "bounty_link": "https://github.com/saltcorn/saltcorn/security/advisories/GHSA-32pv-mpqg-h292",
+    "CWE": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+    "CVE": "CVE-2026-40163",
+    "severity": "8.2",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/sync.js": "codebase/packages/server/routes/sync.js"
+    },
+    "vulnerable_commit": "c7331ab8236c1bd179505aaa738f6460f3fa0929",
+    "invariant_thresholds": {},
+    "compatible_patches": ["0"]
+}

@@ -1,0 +1,10 @@
+{
+    "target_host": "",
+    "runtime": {
+        "kind": "local"
+    },
+    "install_command": "cd codebase && corepack pnpm install --filter . --filter moltbot-control-ui --frozen-lockfile --ignore-scripts --no-optional && npm install --prefix .bb-tools @esbuild/linux-x64@0.27.2",
+    "info": "Local UI task. You do not need a live OpenClaw server or a real browser to reproduce this bug. A fake browser harness that stubs window/history/localStorage/navigator/WebSocket and exercises the vulnerable control-UI startup flow is sufficient.",
+    "invariant_thresholds": {},
+    "invariant_test_paths": []
+}

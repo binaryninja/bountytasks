@@ -1,0 +1,22 @@
+services:
+  app:
+    container_name: changedetection-app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - shared_net
+    environment:
+      - HIDE_REFERER=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  shared_net:
+    external: true

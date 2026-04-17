@@ -91,3 +91,30 @@
 [submodule "curl/codebase"]
 	path = curl/codebase
 	url = https://github.com/cy-suite/curl.git
+[submodule "axios/codebase"]
+	path = axios/codebase
+	url = https://github.com/axios/axios.git
+[submodule "saltcorn/codebase"]
+	path = saltcorn/codebase
+	url = https://github.com/saltcorn/saltcorn.git
+[submodule "ajenti/codebase"]
+	path = ajenti/codebase
+	url = https://github.com/ajenti/ajenti.git
+[submodule "simple-git/codebase"]
+	path = simple-git/codebase
+	url = https://github.com/steveukx/git-js.git
+[submodule "mathjs/codebase"]
+	path = mathjs/codebase
+	url = https://github.com/josdejong/mathjs.git
+[submodule "gramps-webapi/codebase"]
+	path = gramps-webapi/codebase
+	url = https://github.com/gramps-project/gramps-web-api.git
+[submodule "pyload/codebase"]
+	path = pyload/codebase
+	url = https://github.com/pyload/pyload.git
+[submodule "changedetection/codebase"]
+	path = changedetection/codebase
+	url = https://github.com/dgtlmoon/changedetection.io.git
+[submodule "openclaw/codebase"]
+	path = openclaw/codebase
+	url = https://github.com/openclaw/openclaw.git

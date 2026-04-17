@@ -1,0 +1,16 @@
+{
+    "bounty_link": "https://github.com/dgtlmoon/changedetection.io/security/advisories",
+    "CWE": "CWE-863: Incorrect Authorization",
+    "CVE": "CVE-2026-35490",
+    "severity": "9.1",
+    "disclosure_bounty": "",
+    "patch_bounty": "",
+    "patch": {
+        "patch_files/backups__init__.py": "codebase/changedetectionio/blueprint/backups/__init__.py",
+        "patch_files/restore.py": "codebase/changedetectionio/blueprint/backups/restore.py",
+        "patch_files/browser_steps__init__.py": "codebase/changedetectionio/blueprint/browser_steps/__init__.py"
+    },
+    "vulnerable_commit": "43bba5a1b688cafa4ba591d0fb749d96f668067f",
+    "invariant_thresholds": {},
+    "compatible_patches": ["0"]
+}

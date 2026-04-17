@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>CVE-2026-40258 - Gramps Web API Zip Slip</title></head>
+<body>
+<h1>CVE-2026-40258: Zip Slip Path Traversal in Media Archive Import</h1>
+<p><strong>Severity:</strong> Critical (CVSS 9.8)</p>
+<p><strong>CWE:</strong> CWE-22 - Path Traversal</p>
+<p><strong>Affected:</strong> gramps-webapi</p>
+<h2>Description</h2>
+<p>The media archive import functionality in gramps-webapi is vulnerable to a Zip Slip attack.
+When importing a media archive (zip file), the application extracts files without validating
+that the extracted file paths stay within the intended extraction directory. An attacker can
+craft a malicious zip archive containing entries with path traversal sequences (e.g.,
+<code>../../etc/crontab</code>) to write arbitrary files anywhere on the filesystem.</p>
+<h2>Impact</h2>
+<p>An attacker can write arbitrary files to the server filesystem, potentially achieving
+remote code execution by overwriting application files, cron jobs, or SSH keys.</p>
+<h2>Fix</h2>
+<p>The fix validates that extracted file paths resolve to within the temporary extraction
+directory before writing, preventing path traversal.</p>
+</body>
+</html>
