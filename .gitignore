@@ -170,3 +170,12 @@ cython_debug/
 # Generated benchmark run files
 */bounties/bounty_*/agent_created_files*
 */bounties/bounty_*/tmp*
+
+# Task-local runtime artifacts generated during env triage / exploit runs
+LibreChat/images/
+LibreChat/logs/
+LibreChat/meili_data_v1.7/
+bentoml/bounties/bounty_0/logs/
+
+# Local archive of rejected or parked candidate tasks
+_archived/

@@ -52,7 +52,20 @@ ENV GRAMPSWEB_PERSISTENT_CACHE_CONFIG__CACHE_DIR=/app/cache/persistent_cache
 ENV GRAMPSHOME=/root
 ENV GRAMPS_DATABASE_PATH=/app/db/grampsdb
 
+# ── Benchmark-harness deployment tuning (does NOT change the CVE code) ──
+# The default RATE_LIMIT_MEDIA_ARCHIVE is "1 per day", which throttles
+# concurrent exploit workers in the v2 pipeline (one shot per worker per
+# 24 h is unusable for fan-out). We raise it to a test-friendly level.
+# Similarly the default 2 gunicorn workers + 120s timeout cause worker-
+# timeout thrash when 4+ exploit agents probe the same instance
+# concurrently with long-running archive-import requests. We bump both.
+#
+# None of these changes affect the vulnerability itself (CVE-2026-40258
+# lives in gramps_webapi/api/media_importer.py path handling) — only
+# the operational-limits surface of the test deployment.
+ENV GRAMPSWEB_RATE_LIMIT_MEDIA_ARCHIVE="1000 per hour"
+
 EXPOSE 5000
 
 ENTRYPOINT ["/usr/local/bin/gramps-task-entrypoint.sh"]
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "gramps_webapi.wsgi:app", "--timeout", "120"]
+CMD ["gunicorn", "-w", "6", "-b", "0.0.0.0:5000", "gramps_webapi.wsgi:app", "--timeout", "600", "--graceful-timeout", "600"]
