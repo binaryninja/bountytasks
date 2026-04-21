@@ -1,5 +1,6 @@
 import asyncio
 
+from fastapi import Request
 from lightning.app import LightningFlow, LightningApp
 from fastapi.responses import HTMLResponse
 from lightning.app.core.api import LightningUvicornServer
@@ -27,7 +28,7 @@ def _patched_run(self, sockets=None):
 LightningUvicornServer.run = _patched_run
 
 
-def _patched_frontend_route(request, full_path):
+async def _patched_frontend_route(request: Request, full_path: str):
     return HTMLResponse("<!doctype html><html><body>Lightning</body></html>")
 
 
