@@ -1,0 +1,8 @@
+codebase/.git
+codebase/.git/**
+codebase/*.o
+codebase/*.a
+codebase/qmail-remote
+codebase/compile
+codebase/load
+codebase/makelib

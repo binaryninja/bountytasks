@@ -118,3 +118,6 @@
 [submodule "openclaw/codebase"]
 	path = openclaw/codebase
 	url = https://github.com/openclaw/openclaw.git
+[submodule "qmail/codebase"]
+	path = qmail/codebase
+	url = https://github.com/sagredo-dev/qmail.git

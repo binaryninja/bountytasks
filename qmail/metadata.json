@@ -1,0 +1,11 @@
+{
+    "target_host": "qmail-api:8080",
+    "runtime": {
+        "kind": "server"
+    },
+    "invariant_thresholds": {
+        "healthcheck": 1
+    },
+    "invariant_test_paths": [],
+    "info": "The target exposes a qmail-style outbound delivery trigger over HTTP. Visit GET / for the API shape. The container keeps qmail state under /var/qmail with control/notlshosts_auto enabled."
+}
