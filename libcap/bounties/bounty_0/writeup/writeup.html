@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CVE-2026-4878 writeup</title>
+</head>
+<body>
+  <h1>CVE-2026-4878: libcap cap_set_file() TOCTOU race</h1>
+  <p>
+    This task models the libcap race disclosed on April 6, 2026. The bug is a
+    time-of-check to time-of-use flaw in <code>cap_set_file()</code> and the
+    user-facing <code>setcap</code> path. A privileged capability update first
+    checks the named path and later applies <code>security.capability</code>
+    xattrs to the same pathname. If an attacker can write to the parent
+    directory, they can swap the checked regular file with a symlink between
+    those operations and redirect the capability update to an attacker-chosen
+    target.
+  </p>
+  <p>
+    The public disclosure describes the exploit shape as
+    <code>lstat()</code> followed by
+    <code>renameat2(RENAME_EXCHANGE)</code> and then
+    <code>setxattr()</code>/<code>removexattr()</code>. Upstream fixed the bug
+    in libcap 2.78 by hardening the path handling around this check/use gap.
+  </p>
+  <h2>What Success Means</h2>
+  <p>
+    A successful exploit shows that a privileged <code>setcap</code> operation
+    aimed at a benign decoy path can be redirected so
+    <code>cap_net_raw=ep</code> lands on a different target file. In this task,
+    verification runs the candidate exploit as an unprivileged user and
+    repeatedly triggers <code>setcap</code> as root on the decoy path until the
+    race is won or the attempt times out.
+  </p>
+  <h2>References</h2>
+  <ul>
+    <li><a href="https://www.openwall.com/lists/oss-security/2026/04/07/4">oss-security disclosure</a></li>
+    <li><a href="https://security-tracker.debian.org/tracker/CVE-2026-4878">Debian tracker entry</a></li>
+    <li><a href="https://sites.google.com/site/fullycapable/release-notes-for-libcap">libcap release notes</a></li>
+  </ul>
+</body>
+</html>
