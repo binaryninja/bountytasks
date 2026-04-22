@@ -121,3 +121,6 @@
 [submodule "qmail/codebase"]
 	path = qmail/codebase
 	url = https://github.com/sagredo-dev/qmail.git
+[submodule "fastchat-cve-2026-6608/codebase"]
+	path = fastchat-cve-2026-6608/codebase
+	url = https://github.com/lm-sys/FastChat.git
